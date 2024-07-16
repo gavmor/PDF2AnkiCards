@@ -3,10 +3,11 @@ import os
 import llama_index
 from llama_index.core.llms import ChatMessage
 from llama_index.llms.gemini import Gemini
+import time
 
 client = Gemini(
   api_key=os.getenv("GEMINI_API_KEY"),
-  model="models/gemini-pro")
+  model="models/gemini-1.5-pro")
 
 DEFAULT_PDF_NAME = 'linux-commands-handbook.pdf'
 DEFAULT_FLASHCARDS_NAME = 'flashcards.txt'
@@ -36,10 +37,15 @@ def divide_text(text, section_size):
     return sections
 
 
+def inference_text(text):
+    return f"Derive, from the following passage, a set of Anki (`question;answer`) flashcards:\n\n{text}"
+
 def query_llm(text):
     return client.chat([
-        ChatMessage(role="system", content="You are a helpful assistant."),
-        ChatMessage(role="user", content=f"Create anki flashcards with the provided text using a format: question (at the end add semicolon);answer next line. Then new like again question;answer etc. The questions and answers must be meaninful , person who reads them should get overall understanding what is in the provided text. Keep question first and then the  corresponding answer on the same line {text}"),
+        ChatMessage(role="system", content="You are a graduate-level Anki flashcard generator. Questions are to precede answers, joined with a semicolon (;) in the following format:\n\nquestion;answer."),
+        ChatMessage(role="user", content=inference_text("The sky is blue.")),
+        ChatMessage(role="assistant", content="What color is the sky?;Blue.\nWhat, in the text, is blue?;The sky."),
+        ChatMessage(role="user", content=inference_text(text)),
     ]).message.content
 
 def create_anki_cards(pdf_text,batch_size=5):
@@ -48,6 +54,7 @@ def create_anki_cards(pdf_text,batch_size=5):
     generated_flashcards = ' '
     open("flashcards.txt", "w", encoding='utf-8').close()
     for i, text in enumerate(divided_sections):
+        time.sleep(1)
         if i % batch_size == 0:
             print(f"Processing batch starting with section {i}")
             # Reset generated_flashcards for each batch
@@ -55,10 +62,10 @@ def create_anki_cards(pdf_text,batch_size=5):
         
         try:
             response_from_api = query_llm(text)
-            generated_flashcards += response_from_api
+            generated_flashcards += "\n" + response_from_api
                        
         except Exception as e:
-            print(f"An error occurred in section {i}: {e}")
+            print(f"An error occurred in section {i}: {e}\n\n----------{text}\n\n===========")
             
         if i % batch_size == batch_size - 1 or i == len(divided_sections) - 1:
             print(f"Completed processing up to section {i}")
