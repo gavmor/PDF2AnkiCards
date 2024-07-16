@@ -1,8 +1,12 @@
 import PyPDF2
-from openai import OpenAI
 import os
+import llama_index
+from llama_index.core.llms import ChatMessage
+from llama_index.llms.gemini import Gemini
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = Gemini(
+  api_key=os.getenv("GEMINI_API_KEY"),
+  model="models/gemini-pro")
 
 DEFAULT_PDF_NAME = 'linux-commands-handbook.pdf'
 DEFAULT_FLASHCARDS_NAME = 'flashcards.txt'
@@ -32,8 +36,13 @@ def divide_text(text, section_size):
     return sections
 
 
-def create_anki_cards(pdf_text,batch_size=5):
+def query_llm(text):
+    return client.chat([
+        ChatMessage(role="system", content="You are a helpful assistant."),
+        ChatMessage(role="user", content=f"Create anki flashcards with the provided text using a format: question (at the end add semicolon);answer next line. Then new like again question;answer etc. The questions and answers must be meaninful , person who reads them should get overall understanding what is in the provided text. Keep question first and then the  corresponding answer on the same line {text}"),
+    ]).message.content
 
+def create_anki_cards(pdf_text,batch_size=5):
     SECTION_SIZE = 1000
     divided_sections = divide_text(pdf_text, SECTION_SIZE)
     generated_flashcards = ' '
@@ -45,18 +54,7 @@ def create_anki_cards(pdf_text,batch_size=5):
             generated_flashcards = ''
         
         try:
-            messages = [
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": f"Create anki flashcards with the provided text using a format: question (at the end add semicolon);answer next line. Then new like again question;answer etc. The questions and answers must be meaninful , person who reads them should get overall understanding what is in the provided text. Keep question first and then the  corresponding answer on the same line {text}"}
-                ]
-
-            response = client.chat.completions.create(
-                model="gpt-4",
-                messages=messages, 
-                temperature =0.3,
-                max_tokens=1000)
-            
-            response_from_api = response.choices[0].message.content
+            response_from_api = query_llm(text)
             generated_flashcards += response_from_api
                        
         except Exception as e:
@@ -70,8 +68,11 @@ def create_anki_cards(pdf_text,batch_size=5):
 
     print("Finished generating flashcards")
 
-if __name__ == "__main__":
 
+
+if __name__ == "__main__":
+    print("s: " + query_llm("The boy was irony."))
+    
     if not os.path.exists(PDF_FILE_PATH):
         print(f"Error: PDF file not found at {PDF_FILE_PATH}")
     else:
