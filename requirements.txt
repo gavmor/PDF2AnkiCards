@@ -1,3 +1,5 @@
 PyPDF2
 llama-index
 llama-index-llms-gemini
+tqdm
+google.generativeai
