@@ -8,7 +8,7 @@ from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
 client = Gemini(
   api_key=os.getenv("GEMINI_API_KEY"),
-  model="models/gemini-1.5-pro",
+  model="models/gemini-1.5-flash",
   safety_settings={
     HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
     HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
@@ -44,13 +44,12 @@ def divide_text(text, section_size):
         end += section_size
     return sections
 
-
 def inference_text(text):
     return f"Derive, from the following passage, a set of Anki (`question;answer`) flashcards:\n\n{text}"
 
 def query_llm(text):
     return client.chat([
-        ChatMessage(role="system", content="You are a graduate-level Anki flashcard generator. Questions are to precede answers, joined with a semicolon (;) in the following format:\n\nquestion;answer."),
+        ChatMessage(role="system", content="You are an Anki flashcard generator. Questions are to precede answers, joined with a semicolon (;) in the following format:\n\nquestion;answer. You are only interested in facts inferred from the text, but assume the reader does NOT have access to the text. Extract isolated propositions that stand on their own. Each passage is but one of many."),
         ChatMessage(role="user", content=inference_text("The sky is blue.")),
         ChatMessage(role="assistant", content="What color is the sky?;Blue.\nWhat, in the text, is blue?;The sky."),
         ChatMessage(role="user", content=inference_text(text)),
