@@ -1,6 +1,6 @@
 # PDF to Anki Card generator
 
-The PDF to Anki Card Generator is designed to convert text from PDF files into Anki flashcards. It processes the PDF content in chunks and utilizes OpenAI's GPT models to generate question-answer pairs suitable for flashcard-based learning.
+The PDF to Anki Card Generator is designed to convert text from PDF files into Anki flashcards. It processes the PDF content in chunks and utilizes Google Gemini LLM models to generate question-answer pairs suitable for flashcard-based learning.
 
 # Environment Setup
 In order to set your environment up to run the code here, first install all requirements:
@@ -12,9 +12,9 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Configure OpenAPI Key
+## Configure LLM API Key
 ```shell
-export OPENAI_API_KEY=your_api_key_here
+export GEMINI_API_KEY=your_api_key_here
 ```
 
 ## Set Custom File Paths (Optional)
@@ -34,5 +34,5 @@ export FLASHCARDS_FILE_PATH=/path/to/your/flashcards.txt
 
 # Important Notes
 - The script divides the PDF into smaller chunks for processing. Depending on the length and complexity of your PDF, the script may take some time to execute.
-- The format of generated flashcards depends on the responses from the OpenAI API. You might need to adjust the prompts or post-process the output for your specific needs.
-- Ensure your OpenAI API key has sufficient quota and permissions for GPT model usage.
+- The format of generated flashcards depends on the responses from the Gemini API. You might need to adjust the prompts or post-process the output for your specific needs.
+- Ensure your Gemini API key has sufficient quota and permissions for GPT model usage.
