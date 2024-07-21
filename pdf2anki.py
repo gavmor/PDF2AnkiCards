@@ -1,5 +1,5 @@
-import PyPDF2
 import os
+from text import divide_text, read_pdf
 from llm import infer_flashcards
 import time
 from tqdm import tqdm
@@ -13,23 +13,6 @@ ROOT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 # export FLASHCARDS_FILE_PATH=/path/to/your/flashcards.txt
 PDF_FILE_PATH = os.getenv("PDF_FILE_PATH", os.path.join(ROOT_DIRECTORY, 'SOURCE_DOCUMENTS', DEFAULT_PDF_NAME))
 FLASHCARDS_FILE_PATH = os.getenv("FLASHCARDS_FILE_PATH", os.path.join(ROOT_DIRECTORY, DEFAULT_FLASHCARDS_NAME))
-
-def read_pdf(file_path):
-    with open(file_path, 'rb') as file:
-        reader = PyPDF2.PdfReader(file)
-        text = " ".join([page.extract_text() for page in reader.pages])
-    return text
-
-def divide_text(text, section_size):
-    sections = []
-    start = 0
-    end = section_size
-    while start < len(text):
-        section = text[start:end]
-        sections.append(section)
-        start = end
-        end += section_size
-    return sections
 
 def create_anki_cards(pdf_text,output):
     SECTION_SIZE = 1000
